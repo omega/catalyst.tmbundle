@@ -5,11 +5,12 @@
 	<key>beforeRunningCommand</key>
 	<string>nop</string>
 	<key>command</key>
-	<string># just to remind you of some useful environment variables
-# see Help / Environment Variables for the full list
-echo File: "$TM_FILEPATH"
-echo Word: "$TM_CURRENT_WORD"
-echo Selection: "$TM_SELECTED_TEXT"</string>
+	<string>#!/usr/bin/perl
+
+use lib $ENV{TM_BUNDLE_SUPPORT} . "/lib";
+use Catalyst::TMBundle qw(create_view);
+
+create_view</string>
 	<key>input</key>
 	<string>selection</string>
 	<key>keyEquivalent</key>
@@ -17,7 +18,7 @@ echo Selection: "$TM_SELECTED_TEXT"</string>
 	<key>name</key>
 	<string>Create view</string>
 	<key>output</key>
-	<string>replaceSelectedText</string>
+	<string>openAsNewDocument</string>
 	<key>uuid</key>
 	<string>D93FEFD8-0D93-475D-AE86-9D86786EF7E6</string>
 </dict>
