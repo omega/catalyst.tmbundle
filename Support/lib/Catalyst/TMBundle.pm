@@ -14,7 +14,7 @@ use vars qw/@ISA @EXPORT_OK %EXPORT_TAGS/;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(create_view _get_app_name);
+@EXPORT_OK = qw(create_view create_controller _get_app_name);
 %EXPORT_TAGS = (
     cmds => [qw()], 
     test => [qw(_get_app_name)], 
@@ -31,22 +31,27 @@ sub create {
     
     
     my $helper = Catalyst::Helper->new( { 
-        '.newfiles' => 1, 
-        mech => 1, 
+        '.newfiles' => !$args->{force}, 
+        mech => $args->{mech},
+        base =>  $ENV{TM_PROJECT_DIRECTORY},
     });
-    $helper->{base} = $ENV{TM_PROJECT_DIRECTORY},
+    #$helper->{base} = $ENV{TM_PROJECT_DIRECTORY};
     
     # TODO: Catch output on STDOUT and mangle it?
     my $ret = $helper->mk_component( _get_app_name(), @_);
     error("could not create component") unless $ret;
     rescan_project();
 }
+sub create_controller {
+    my $res = show_dialog('create_controller.nib');
+    create($res, 'controller', $res->{returnArgument});
+}
 sub create_view {
     
     my $res = show_dialog('create_view.nib');
     warn "res: " . dump($res);
     
-    create('view', $res->{returnArgument}, $res->{helper});
+    create($res, 'view', $res->{returnArgument}, $res->{helper});
 }
 sub show_dialog {
     my ($nib, $user_defaults) = @_;
@@ -54,13 +59,15 @@ sub show_dialog {
     my $real_nib = $ENV{TM_BUNDLE_SUPPORT} . '/dialogs/' . $nib;
     error("no such nib: $real_nib") unless -e $real_nib;
     my $cmd = $ENV{DIALOG}  
-        . " -d '{Catalyst_create_force = 0; Catalyst_create_mech = 1;}' -mp '{}' '" 
+        . " -d '{Catalyst_create_force = 0; Catalyst_create_mech = 1;}'"
+        . " -mp '{}' '" 
         . $real_nib . "'";
         
     # create a plist of user_defaults
-    my $res = `$cmd`;
+    my $res = `$cmd 2>&1`;
+    error("problem running tm_dialog: $res") unless ($res =~ /^<\?xml/);
     my $plist = parse($res);
-    
+    exit_discard() unless $plist->{dict}->{result};
     return $plist->{dict}->{result};
 }
 
