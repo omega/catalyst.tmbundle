@@ -14,7 +14,7 @@ use vars qw/@ISA @EXPORT_OK %EXPORT_TAGS/;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(create_view create_controller _get_app_name);
+@EXPORT_OK = qw(create_view create_controller _get_app_name get_app_module);
 %EXPORT_TAGS = (
     cmds => [qw()], 
     test => [qw(_get_app_name)], 
@@ -82,7 +82,13 @@ sub _get_app_name {
     
     return $name;
 }
-
+sub get_app_module {
+    my $name = _get_app_name();
+    
+    $name =~ s/-/::/g;
+    
+    return $name;
+}
 sub error {
     my ($err) = @_;
     print "err: $err";
